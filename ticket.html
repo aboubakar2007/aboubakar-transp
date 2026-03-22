@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votre Billet - AboubakarTransp</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-light);
+            padding: 20px;
+        }
+        .ticket-page-container {
+            max-width: 500px;
+            width: 100%;
+            animation: slideDown 0.4s forwards;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .ticket-actions {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .ticket-actions-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        .ticket-actions-row .btn {
+            flex: 1;
+        }
+        .success-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .success-header i {
+            font-size: 3rem;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        .success-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+        .success-header p {
+            color: var(--text-muted);
+        }
+
+        /* Print styles */
+        @media print {
+            body { background-color: white; padding: 0; align-items: flex-start; }
+            .ticket-page-container { margin: 20px auto; box-shadow: none; }
+            .ticket-actions, .success-header { display: none !important; }
+            .ticket-card { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ticket-page-container">
+        <div class="success-header">
+            <i class="fa-solid fa-circle-check"></i>
+            <h2>Réservation Confirmée !</h2>
+            <p>Voici votre billet virtuel de transport.</p>
+        </div>
+
+        <div id="ticket-output">
+            <!-- Ticket content injected via JS -->
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <p style="margin-top: 15px;">Chargement de votre billet...</p>
+            </div>
+        </div>
+
+        <div class="ticket-actions">
+            <button class="btn btn-primary btn-block" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Imprimer / Télécharger en PDF
+            </button>
+            <a href="index.html" class="btn btn-secondary btn-block" style="text-align: center;">
+                <i class="fa-solid fa-home"></i> Retour à l'accueil
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Theme initialization
+            const htmlElement = document.documentElement;
+            const savedTheme = localStorage.getItem('aboubakartransp_theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                htmlElement.setAttribute('data-theme', 'dark');
+            }
+
+            const ticketOutput = document.getElementById('ticket-output');
+            const currentTicketId = localStorage.getItem('aboubakartransp_current_ticket');
+            const bookings = JSON.parse(localStorage.getItem('aboubakartransp_bookings')) || [];
+            
+            if (!currentTicketId) {
+                ticketOutput.innerHTML = `
+                    <div class="ticket-card" style="text-align:center; padding: 50px;">
+                        <h2>Aucun billet trouvé.</h2>
+                        <p style="margin-top:10px; opacity:0.8;">Veuillez retourner à l'accueil pour faire une réservation.</p>
+                    </div>`;
+                return;
+            }
+
+            const ticketData = bookings.find(b => b.id === currentTicketId);
+            
+            if (!ticketData) {
+                ticketOutput.innerHTML = `
+                    <div class="ticket-card" style="text-align:center; padding: 50px;">
+                        <h2>Billet introuvable.</h2>
+                        <p style="margin-top:10px; opacity:0.8;">Les données de réservation sont introuvables.</p>
+                    </div>`;
+                return;
+            }
+            
+            const dateObj = new Date(ticketData.date);
+            const formattedDate = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+
+            // Using the existing CSS variables from style.css for ticket-card
+            ticketOutput.innerHTML = `
+                <div class="ticket-card" style="margin:0; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+                    <div class="ticket-header">
+                        <div class="ticket-logo"><i class="fa-solid fa-bus"></i> AboubakarTransp</div>
+                        <div class="ticket-id">Billet #${ticketData.id}</div>
+                    </div>
+                    <div class="ticket-route">
+                        <div class="route-point">${ticketData.departure}</div>
+                        <i class="fa-solid fa-arrow-right-long"></i>
+                        <div class="route-point">${ticketData.destination}</div>
+                    </div>
+                    <div class="ticket-body">
+                        <div class="ticket-field">
+                            <span class="ticket-label">Passager</span>
+                            <span class="ticket-value">${ticketData.fullname}</span>
+                        </div>
+                        <div class="ticket-field">
+                            <span class="ticket-label">Date & Heure</span>
+                            <span class="ticket-value" style="text-transform: capitalize;">${formattedDate} - ${ticketData.time}</span>
+                        </div>
+                        <div class="ticket-field">
+                            <span class="ticket-label">Passagers</span>
+                            <span class="ticket-value">${ticketData.passengers} x Billet(s)</span>
+                        </div>
+                        <div class="ticket-field">
+                            <span class="ticket-label">Contact</span>
+                            <span class="ticket-value">${ticketData.phone}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.4); text-align: center;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=Ticket:${ticketData.id}|Nom:${ticketData.fullname}" alt="QR Code" style="border-radius: 8px; background: white; padding: 5px;">
+                        <div style="font-size: 0.8rem; margin-top: 8px; opacity: 0.9;">Veuillez présenter ce code QR lors de l'embarquement</div>
+                    </div>
+                </div>
+            `;
+
+            // Optionally clean up localStorage so pressing back doesn't keep showing the success state?
+            // Usually, leaving it is fine so they can refresh the page and still see it.
+        });
+    </script>
+</body>
+</html>
