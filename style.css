@@ -941,3 +941,66 @@ ul {
         transform: translateX(-50%);
     }
 }
+
+/* horaires : sur téléphone, chaque trajet devient une carte au lieu d'un tableau à faire défiler */
+@media screen and (max-width: 640px) {
+    .schedules-table-container {
+        overflow: visible;
+        background: none;
+        box-shadow: none;
+        border: none;
+    }
+
+    .schedules-table {
+        min-width: 0;
+    }
+
+    .schedules-table thead {
+        display: none;
+    }
+
+    .schedules-table,
+    .schedules-table tbody,
+    .schedules-table tr,
+    .schedules-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .schedules-table tr {
+        margin-bottom: 14px;
+        padding: 6px 0;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+    }
+
+    .schedules-table td {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 18px;
+        border-bottom: none;
+        text-align: right;
+    }
+
+    .schedules-table td::before {
+        content: attr(data-label);
+        color: var(--text-muted, inherit);
+        opacity: 0.7;
+        font-size: 0.85rem;
+        text-align: left;
+        flex-shrink: 0;
+    }
+
+    .schedules-table td:first-child {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px;
+        margin-bottom: 4px;
+    }
+
+    .schedules-table td:first-child::before {
+        display: none;
+    }
+}
